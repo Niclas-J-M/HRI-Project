@@ -25,22 +25,21 @@ def STT_dialogue(session):
 
     # Dialogue loop
     while True:
-        # wait for a full utterance
         while not audio_processor.new_words:
-            yield sleep(0.1)
             audio_processor.loop()
             yield sleep(0.1)
-            
 
-        # grab and then clear so next time is fresh
+        # grab and reset buffer
         raw = audio_processor.give_me_words()
-        words = [w[0] if isinstance(w, tuple) else str(w) for w in raw]
-        sentence = " ".join(words).strip()
+        audio_processor.english_words = []
+        audio_processor.new_words = False
+
+        # pick the latest sentence only
+        latest_sentence = raw[-1][0] if raw else ""
+        sentence = latest_sentence.strip()
         print("User said:", sentence)
 
-        # … after you build your `words` list …
-        words_lower = [w.lower() for w in words]
-        if "bye" in words_lower:
+        if "bye" in sentence.lower().split():
             yield session.call("rie.dialogue.say", text="Goodbye!")
             break
         else:
