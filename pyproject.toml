@@ -1,23 +1,16 @@
-[project]
-name = "hri"
+[tool.poetry]
+name = "hri-project"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Niclas",email = "n.j.muller-hof@snu.ac.kr"}
-]
+authors = ["Niclas"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "autobahn[serialization,twisted] (>=24.4.2,<25.0.0)",
-    "alpha-mini-rug (>=0.7.0,<0.8.0)",
-    "pyopenssl (>=25.0.0,<26.0.0)",
-    "speechrecognition (>=3.14.2,<4.0.0)"
-]
 
-[tool.poetry]
-packages = [{include = "hri", from = "src"}]
+[tool.poetry.dependencies]
+python = "^3.12"
+autobahn = {extras = ["serialization", "twisted"], version = "^24.4.2"}
+pyopenssl = "^25.0.0"
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
