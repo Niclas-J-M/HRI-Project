@@ -2,12 +2,12 @@ from autobahn.twisted.component import Component, run
 from twisted.internet.defer import inlineCallbacks
 from autobahn.twisted.util import sleep
 from alpha_mini_rug.speech_to_text import SpeechToText
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from prompt import create_persona
 
 # Setup Gemini API
-genai.configure(api_key="GOOGLE_API_KEY")
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = genai.Client(api_key="GOOGLE_API_KEY")
 
 # Initialize the speech-to-text processor
 audio_processor = SpeechToText()
@@ -52,9 +52,30 @@ def STT_dialogue(session):
 
     # Create a Gemini conversation context
     persona_prompt = create_persona(user_name)
-    chat = model.start_chat(history=[
-        {"role": "user", "parts": [persona_prompt]}
-    ])
+    chat = client.chats.create(
+        model="gemini-2.0-flash-lite",
+        config=types.GenerateContentConfig(
+            system_instruction=[persona_prompt],
+            safety_settings=[
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                    threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                    threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                )
+            ]
+        )
+    )
 
     audio_processor.do_speech_recognition = False
     response = chat.send_message(f"The user's name is {user_name}. Greet them warmly and ask how they're doing.")
@@ -104,7 +125,7 @@ wamp = Component(
         "serializers": ["msgpack"],
         "max_retries": 0
     }],
-    realm="rie.6808d97a29c04006ecc04b7f"
+    realm="rie.ROBOT_REALM"
 )
 
 wamp.on_join(main)
