@@ -4,7 +4,7 @@ from google.genai import types
 from prompt import create_persona
 
 # Configure API key
-client = genai.Client(api_key="GOOGLE_API_KEY")
+client = genai.Client(api_key="")
 
 # Start conversation
 print("Bot: Hi there! What's your name?")
@@ -39,7 +39,11 @@ chat = client.chats.create(
 
 # Use the name in the response
 response = chat.send_message(f"The user's name is {user_name}. Greet them warmly and ask how they're doing.")
-print(f"Bot: {response.text}")
+greetings = response.text 
+text = greetings.split('~')[0]
+action = greetings.split('~')[1]
+print(text)
+print(action)
 
 # Chat loop
 while True:
@@ -49,5 +53,8 @@ while True:
         break
     
     response = chat.send_message(user_input)
-    motion = response.text
-    print(motion.split('~'))
+    reply = response.text
+    text = reply.split('~')[0]
+    action = reply.split('~')[1]
+    print(text)
+    print(action)

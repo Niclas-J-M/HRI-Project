@@ -5,14 +5,14 @@ from alpha_mini_rug.speech_to_text import SpeechToText
 from google import genai
 from google.genai import types
 from prompt import create_persona
-
+import time
 # Setup Gemini API
-client = genai.Client(api_key="GOOGLE_API_KEY")
+client = genai.Client(api_key="")
 
 # Initialize the speech-to-text processor
 audio_processor = SpeechToText()
 audio_processor.silence_time = 0.5
-audio_processor.silence_threshold2 = 100
+audio_processor.silence_threshold2 = 200
 audio_processor.logging = False
 
 
@@ -20,19 +20,34 @@ audio_processor.logging = False
 def ask_for_name(session):
     """Ask the user for their name and capture it using STT."""
     audio_processor.do_speech_recognition = False
-    yield session.call("rie.dialogue.say_animated", text="Hello, this is RobotName. What is your name?")
+    session.call("rom.optional.behavior.play", name="BlocklyBow")
+    yield session.call("rie.dialogue.say", text="Hello, this is Blockly. What is your name?")
     audio_processor.do_speech_recognition = True
 
+    start_time = time.time()
     # Wait for user's spoken name
     while not audio_processor.new_words:
         audio_processor.loop()
         yield sleep(0.1)
 
+        if time.time() - start_time > 7:
+            print("Timeout: No user input detected for 7 seconds.")
+            audio_processor.do_speech_recognition = False
+            yield session.call("rie.dialogue.say", text="Are you still there?")
+            yield sleep(0.5)
+            audio_processor.do_speech_recognition = True
+            start_time = time.time()  # Reset timer if you want to keep waiting
+
+
     raw = audio_processor.give_me_words()
-    name = raw[-1][0].strip() if raw else "there"
+    raw_name = raw[-1][0].strip() if raw else "there"
+    name = client.models.generate_content(
+        model="gemini-2.0-flash-lite",
+        contents=f"Find the name in the following text and only return the name: {raw_name}"
+    )
+    name = name.text
 
     print("Captured name:", name)
-
     return name
 
 @inlineCallbacks
@@ -78,7 +93,12 @@ def STT_dialogue(session):
 
     audio_processor.do_speech_recognition = False
     response = chat.send_message(f"The user's name is {user_name}. Greet them warmly and ask how they're doing.")
-    yield session.call("rie.dialogue.say_animated", text=response.text)
+    greetings = response.text.split('~ ')
+    reply_text = greetings[0]
+    action = greetings[1].rstrip()
+    print(action)
+    session.call("rom.optional.behavior.play", name=action)
+    yield session.call("rie.dialogue.say", text=reply_text)
     audio_processor.do_speech_recognition = True
 
     # Main conversation loop
@@ -94,17 +114,24 @@ def STT_dialogue(session):
         # Check for exit
         if any(word in sentence.lower() for word in ["bye", "goodbye", "see you", "later"]):
             audio_processor.do_speech_recognition = False
-            yield session.call("rie.dialogue.say_animated", text=f"Goodbye, {user_name}! It was lovely talking to you.")
+            session.call("rom.optional.behavior.play", name="BlocklyWaverRightArm")
+            yield session.call("rie.dialogue.say", text=f"Goodbye, {user_name}! It was lovely talking to you.")
+            yield session.call("rom.optional.behavior.play", name="BlocklySitDown")
             yield session.call("rom.sensor.hearing.close")
             break
         
         # Build GPT prompt
         response = chat.send_message(sentence)
-        reply = response.text 
-        print(f"Robot said: {reply}")
+        response_clean = response.text.split('~ ') 
+        reply_text = response_clean[0]
+        action = response_clean[1].rstrip()
+        print(f"Robot said: {reply_text}")
+        print(action)
+
         # Speak response (pause listening)
         audio_processor.do_speech_recognition = False
-        yield session.call("rie.dialogue.say_animated", text=reply)
+        session.call("rom.optional.behavior.play", name=action)
+        yield session.call("rie.dialogue.say", text=reply_text)
         audio_processor.do_speech_recognition = True
 
 
@@ -122,7 +149,7 @@ wamp = Component(
         "serializers": ["msgpack"],
         "max_retries": 0
     }],
-    realm="rie.ROBOT_REALM"
+    realm="rie."
 )
 
 wamp.on_join(main)
