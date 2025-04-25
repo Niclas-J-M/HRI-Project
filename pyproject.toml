@@ -12,6 +12,7 @@ pyopenssl = "^25.0.0"
 speechrecognition = "^3.14.2"
 alpha-mini-rug = "^0.7.0"
 google-generativeai = "^0.8.5"
+google-genai = "^1.12.1"
 
 
 [build-system]
