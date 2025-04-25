@@ -1,20 +1,41 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from prompt import create_persona
 
 # Configure API key
-genai.configure(api_key="GOOGLE_API_KEY")
+client = genai.Client(api_key="GOOGLE_API_KEY")
 
 # Start conversation
 print("Bot: Hi there! What's your name?")
 user_name = input("You: ")
 
 # Initialize the model
-model = genai.GenerativeModel("gemini-2.0-flash")  
 persona_prompt = create_persona(user_name)
-chat = model.start_chat(history=[
-    {"role": "user", "parts": [persona_prompt]}
-])
+chat = client.chats.create(
+    model="gemini-2.0-flash-lite",
+    config=types.GenerateContentConfig(
+        system_instruction=[persona_prompt],
+        safety_settings=[
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            )
+        ]
+    )
+)
 
 # Use the name in the response
 response = chat.send_message(f"The user's name is {user_name}. Greet them warmly and ask how they're doing.")
@@ -28,4 +49,5 @@ while True:
         break
     
     response = chat.send_message(user_input)
-    print(f"Bot: {response.text}")
+    motion = response.text
+    print(motion.split('~'))
