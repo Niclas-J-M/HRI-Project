@@ -20,8 +20,7 @@ audio_processor.logging = False
 def ask_for_name(session):
     """Ask the user for their name and capture it using STT."""
     audio_processor.do_speech_recognition = False
-    yield session.call("rie.dialogue.say", text="Hello, this is RobotName. What is your name?")
-    yield sleep(0.3)
+    yield session.call("rie.dialogue.say_animated", text="Hello, this is RobotName. What is your name?")
     audio_processor.do_speech_recognition = True
 
     # Wait for user's spoken name
@@ -79,8 +78,7 @@ def STT_dialogue(session):
 
     audio_processor.do_speech_recognition = False
     response = chat.send_message(f"The user's name is {user_name}. Greet them warmly and ask how they're doing.")
-    yield session.call("rie.dialogue.say", text=response.text)
-    yield sleep(0.3)
+    yield session.call("rie.dialogue.say_animated", text=response.text)
     audio_processor.do_speech_recognition = True
 
     # Main conversation loop
@@ -96,18 +94,17 @@ def STT_dialogue(session):
         # Check for exit
         if any(word in sentence.lower() for word in ["bye", "goodbye", "see you", "later"]):
             audio_processor.do_speech_recognition = False
-            yield session.call("rie.dialogue.say", text=f"Goodbye, {user_name}! It was lovely talking to you.")
+            yield session.call("rie.dialogue.say_animated", text=f"Goodbye, {user_name}! It was lovely talking to you.")
             yield session.call("rom.sensor.hearing.close")
             break
         
         # Build GPT prompt
         response = chat.send_message(sentence)
         reply = response.text 
-        
+        print(f"Robot said: {reply}")
         # Speak response (pause listening)
         audio_processor.do_speech_recognition = False
-        yield session.call("rie.dialogue.say", text=reply)
-        yield sleep(0.5)
+        yield session.call("rie.dialogue.say_animated", text=reply)
         audio_processor.do_speech_recognition = True
 
 
