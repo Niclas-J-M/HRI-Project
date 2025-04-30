@@ -96,6 +96,7 @@ wamp = Component(
 Once everything is configured and the virtual environment is active, start the interaction system first:
 
 ```bash
+cd hri
 python main.py
 ```
 
