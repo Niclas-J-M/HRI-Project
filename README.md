@@ -31,8 +31,8 @@ A warm, empathetic conversational agent embedded in a social robot. Designed pri
 ### Clone this repository:
 
 ```bash
-git clone <your_repo_url>
-cd <your_project_folder>
+git clone https://github.com/Niclas-J-M/HRI-Project.git
+cd HRI-Project
 ```
 
 ---
