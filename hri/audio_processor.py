@@ -1,6 +1,5 @@
 from twisted.internet.defer import inlineCallbacks
 from autobahn.twisted.util import sleep
-import time
 from alpha_mini_rug.speech_to_text import SpeechToText
 
 class AudioProcessor:
