@@ -99,26 +99,6 @@ Once everything is configured and the virtual environment is active, start the i
 python main.py
 ```
 
-Make sure:
-
-- Your Alpha Mini robot is online and connected to the specified WAMP server (`ws://wamp.robotsindeklas.nl`)  
-- You’ve set your **Google API Key** and **Realm Key** as described above  
-
----
-
-## File Structure
-
-```bash
-.
-├── alpha_mini.py           # Robot speech & movement interface
-├── audio_processor.py      # Audio stream listener and silence detection
-├── language_model.py       # Handles interactions with the Gemini language model
-├── prompt.py               # Persona definition for the robot assistant
-├── main.py                 # Main event loop and user interaction logic
-├── pyproject.toml          # Poetry project configuration
-├── poetry.lock             # Exact package versions
-```
-
 ---
 
 ## Credits
